@@ -1,0 +1,17 @@
+{
+  "name": "first-keyboard",
+  "version": "1.0.0",
+  "description": "44-key split wireless keyboard (Ergogen -> KiCad)",
+  "scripts": {
+    "build": "ergogen . --clean",
+    "build:svg": "ergogen . --clean --svg"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "CC-BY-NC-SA-4.0",
+  "type": "commonjs",
+  "devDependencies": {
+    "ergogen": "^4.2.1"
+  },
+  "private": true
+}
