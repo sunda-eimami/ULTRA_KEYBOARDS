@@ -1,45 +1,51 @@
 # =============================================================================
-#  "first" — 44キー(片側22キー) 分割無線キーボード  Ergogen 設定
+#  "first" — 44キー(片側22キー) 分割無線キーボード  Ergogen 設定  (XIAO 版)
 # -----------------------------------------------------------------------------
 #  - 片側: メイン 3行 x 6列 (outer/pinky/ring/middle/index/inner) + 親指 4キー
 #  - Gallium v2 風 Columnar Staggered (薬指・中指を上げ、人差し指・小指を下げる)
-#  - Kailh Choc v2 (PG1353) + Choc ホットスワップソケット
-#  - MCU: nice!nano v2 / ダイオード: 1N4148W (SOD-123)
-#  - 502030 LiPo (20 x 30 x 5mm) を MCU 裏側(基板裏面)に配置する想定
+#  - Kailh Choc v2 (PG1353) + Choc ホットスワップソケット (裏面)
+#  - MCU: Seeed XIAO nRF52840 Plus (表面・SMD直付け) / ダイオード: 1N4148W SOD-123
+#  - 502030 LiPo は MCU 下の「ベイ」領域の裏面に配置 (ガイド矩形を Dwgs.User に出力)
+#  - 基板は左右で別設計 (first_left / first_right)。XIAO は USB とリセットボタンが
+#    上面にあるためリバーシブル1枚基板にできない。
 #
-#  座標系: Ergogen は +y が「上」。KiCad 出力時に y が反転される。
+#  ピン割当 (ZMK: &xiao_d n):
+#    列 outer..inner = D0 D1 D2 D3 D4 D5 / 親指 t1..t4 = D2 D3 D4 D5 (列を流用)
+#    行 top=D9 home=D8 bottom=D7 thumb=D6
+#    電源 JST(BAT_P) -> 電源SW -> VBAT (モジュール裏パッド) / リセットは本体ボタン
+#
 #  ビルド: npm run build  (= npx ergogen . --clean)
-#  フットプリント: footprints/ceoloide/  (https://github.com/ceoloide/ergogen-footprints)
+#  フットプリント: footprints/ceoloide/ (CC BY-NC-SA 4.0),
+#                  footprints/local/mcu_xiao_nrf52840_plus.js (Seeed公式座標より)
 # =============================================================================
 
 meta:
-  engine: 4.1.0        # ceoloide 製 KiCad8 フットプリントに必要な最低バージョン
+  engine: 4.1.0
   name: first
-  version: 0.1.0
+  version: 0.2.0
 
 # ---------------------------------------------------------------- 単位・変数
 units:
   kx: 18               # キーピッチ X (mm)
   ky: 18               # キーピッチ Y (mm)
   px: 3                # 基板外形の余白 (キー外周からエッジまで)
-  mcu_w: 18            # nice!nano v2 幅
-  mcu_h: 33            # nice!nano v2 長さ (USB コネクタ突出分は除く)
+  mcu_w: 18            # XIAO 幅 17.78mm + マージン
+  mcu_h: 21            # XIAO 長さ (USB 突出 1.2mm は除く)
   bat_w: 20            # 502030 LiPo 幅
   bat_h: 30            # 502030 LiPo 長さ (厚み 5mm)
-  bat_gap: 6           # 左右基板間の隙間 (プレビュー用ミラー距離の計算に使用)
+  bat_gap: 6           # プレビューでの左右基板の間隔
   thumb_splay: -8      # 親指キー1個あたりの扇状回転角 (時計回りが負)
   thumb_radius: 140    # 親指の弧の半径 (回転中心はキー中心から thumb_radius 下)
 
 # ---------------------------------------------------------------- キー配置
 points:
-  # 全ゾーン共通のキー既定値
   key:
-    spread: kx         # 列ピッチ
-    padding: ky        # 行ピッチ
-    width: kx          # 外形計算に使うキー幅
-    height: ky         # 外形計算に使うキー高さ
+    spread: kx
+    padding: ky
+    width: kx
+    height: ky
 
-  # 右手用プレビュー (KiCad PCB には左手側の点のみを使用。asym: source が既定)
+  # 右手側ポイント (mirror_*) の生成。右手基板 first_right はこちらを使う
   mirror:
     ref: mcu
     distance: mcu_w + 2px + bat_gap
@@ -50,100 +56,99 @@ points:
       anchor:
         shift: [100, -100]   # KiCad 上で座標が正になるようにオフセット
       columns:
-        # stagger は「ひとつ左の列に対する相対的な縦ズレ」(累積される)
-        #   絶対値: outer 0 / pinky 0 / ring +6.3 / middle +8.8 / index +4.3 / inner +2.3 (mm)
         outer:                       # 装飾キー用 (小指の外側)
           key:
-            column_net: P21
+            column_net: D0
         pinky:
           key:
             stagger: 0
-            column_net: P20
+            column_net: D1
         ring:                        # 薬指: 大きく上げる
           key:
             stagger: 0.35ky
-            column_net: P19
+            column_net: D2
         middle:                      # 中指: 最も高い位置
           key:
             stagger: 0.14ky
-            column_net: P18
+            column_net: D3
         index:                       # 人差し指: 中指より下げる
           key:
             stagger: -0.25ky
-            column_net: P15
+            column_net: D4
         inner:                       # 人差し指の内側: さらに少し下げる
           key:
             stagger: -0.11ky
-            column_net: P14
+            column_net: D5
       rows:
-        # 一番下の行から定義 (Ergogen は行を上方向に積む)
         bottom:
-          row_net: P8
+          row_net: D7
         home:
-          row_net: P16
+          row_net: D8
         top:
-          row_net: P10
+          row_net: D9
 
     # ------------------------------------------------------------ 親指エリア
     thumb:
-      # index の bottom キーを基準点に、約1.2キー分左・約1.15行分下から親指キーを開始
-      # (t1 は middle 列の下、t2/t3 が index/inner 列の下、t4 が inner の外側に来る)
       anchor:
         ref: matrix_index_bottom
         shift: [-1.2kx, -1.15ky]
       key:
-        rotate: -90              # 親指の可動域に対して直交させるため各キーを -90° 回転
-        row_net: P9              # 親指行の行ネット
+        rotate: -90              # 親指の可動域に直交させる
+        row_net: D6              # 親指行
       columns:
-        # t2 以降は spread: 0 にして、thumb_radius 下の共通中心まわりに thumb_splay ずつ
-        # 回転させることで、親指の可動域に沿った「真円弧」上に扇状配置する
-        # (弦長 ≒ 140mm * 8° ≒ 19.5mm、隣接キー同士は重ならない)
-        # 列ネットは物理的に近いメイン列のネットを流用 (Corne 等と同じ方式)
+        # t2 以降は thumb_radius 下の共通中心まわりに thumb_splay ずつ回転 → 真円弧
         t1:
           key:
-            column_net: P19
+            column_net: D2
         t2:
           key:
             spread: 0
             splay: thumb_splay
             origin: [0, -thumb_radius]
-            column_net: P18
+            column_net: D3
         t3:
           key:
             spread: 0
             splay: thumb_splay
             origin: [0, -thumb_radius]
-            column_net: P15
+            column_net: D4
         t4:
           key:
             spread: 0
             splay: thumb_splay
             origin: [0, -thumb_radius]
-            column_net: P14
+            column_net: D5
       rows:
         thumb:
 
-    # ------------------------------------------------------------ MCU (nice!nano v2)
-    # inner 列の右隣・上寄せに配置。単一ポイント "mcu" が生成される。
+    # ------------------------------------------------------------ MCU (XIAO nRF52840 Plus)
+    # inner 列の右隣。モジュール上端 (USB) が基板上端とほぼ面一になる位置
     mcu:
       anchor:
         ref: matrix_inner_top
-        shift: [0.5kx + 2 + 0.5mcu_w, -6.5]
+        shift: [0.5kx + 2 + 0.5mcu_w, 1.5]
       key:
         width: mcu_w
-        # 外形余白 px に対して USB 側 (上端) を基板端 1mm 内側に寄せるため 4mm 短く扱う
-        height: mcu_h - 4
+        height: mcu_h - 6    # 基板端がモジュール上端に来るよう外形計算上は短く扱う
+
+    # ------------------------------------------------------------ 電源ベイ (バッテリー+JST+電源SW)
+    # MCU 直下に外形を下へ広げるための領域。ポイント名は "batt"
+    batt:
+      anchor:
+        ref: mcu
+        shift: [0, -29]
+      key:
+        width: mcu_w
+        height: bat_h
 
 # ---------------------------------------------------------------- 外形
 outlines:
-  # キー実寸のプレビュー (左手側のみ)
   _keys_left:
     - what: rectangle
       where: /^(matrix|thumb)_/
       size: [kx - 0.5, ky - 0.5]
       corner: 1
 
-  # キー配置プレビュー (左右両方: 全 44 キー)
   keys:
     - what: rectangle
       where: /^(matrix|thumb)_/
@@ -151,7 +156,7 @@ outlines:
       size: [kx - 0.5, ky - 0.5]
       corner: 1
 
-  # 基板外形の元になる包絡線 (各キー矩形 + MCU 矩形の hull)
+  # ---- 左手基板の外形
   _hull:
     - what: hull
       concavity: 45
@@ -164,6 +169,7 @@ outlines:
         - ref: matrix_index_top
         - ref: matrix_inner_top
         - ref: mcu
+        - ref: batt
         - ref: thumb_t4_thumb
         - ref: thumb_t3_thumb
         - ref: thumb_t2_thumb
@@ -172,107 +178,235 @@ outlines:
         - ref: matrix_ring_bottom
         - ref: matrix_pinky_bottom
 
-  # PCB エッジ (Edge.Cuts)
   board:
     - what: outline
       name: _hull
       expand: px
       joints: round
 
-  # 502030 LiPo の占有範囲 (MCU 直下の基板裏面に配置)
+  # ---- 右手基板の外形 (ミラーポイント版)
+  _hull_right:
+    - what: hull
+      concavity: 45
+      points:
+        - ref: mirror_matrix_outer_bottom
+        - ref: mirror_matrix_outer_top
+        - ref: mirror_matrix_pinky_top
+        - ref: mirror_matrix_ring_top
+        - ref: mirror_matrix_middle_top
+        - ref: mirror_matrix_index_top
+        - ref: mirror_matrix_inner_top
+        - ref: mirror_mcu
+        - ref: mirror_batt
+        - ref: mirror_thumb_t4_thumb
+        - ref: mirror_thumb_t3_thumb
+        - ref: mirror_thumb_t2_thumb
+        - ref: mirror_thumb_t1_thumb
+        - ref: mirror_matrix_middle_bottom
+        - ref: mirror_matrix_ring_bottom
+        - ref: mirror_matrix_pinky_bottom
+
+  board_right:
+    - what: outline
+      name: _hull_right
+      expand: px
+      joints: round
+
+  # ---- 502030 LiPo ガイド (裏面配置)
   battery:
     - what: rectangle
-      where: mcu
-      size: [bat_w, bat_h]
+      where:
+        ref: batt
+        shift: [0, -2]
+      size: [bat_w, bat_h - 4]
       corner: 1
 
-  # 全体プレビュー (基板外形 + キー + バッテリー)
+  battery_right:
+    - what: rectangle
+      where:
+        ref: mirror_batt
+        shift: [0, -2]
+      size: [bat_w, bat_h - 4]
+      corner: 1
+
   preview:
     - name: board
-    - name: _keys_left
+    - name: board_right
+      operation: stack
+    - name: keys
       operation: stack
     - name: battery
       operation: stack
+    - name: battery_right
+      operation: stack
 
-# ---------------------------------------------------------------- PCB
+# ---------------------------------------------------------------- PCB (左右別設計)
 pcbs:
-  first:
-    template: kicad8           # ceoloide フットプリントは KiCad 8 形式
+  # ============================================================== 左手
+  first_left:
+    template: kicad8
     outlines:
       edge:
-        outline: board         # Edge.Cuts
+        outline: board
       battery:
         outline: battery
-        layer: Dwgs.User       # バッテリー位置ガイド
+        layer: Dwgs.User
     footprints:
-      # ---- キースイッチ: Choc v1/v2 対応ホットスワップ (ソケットは裏面、リバーシブル)
       choc:
         what: ceoloide/switch_choc_v1_v2
         where: /^(matrix|thumb)_/
         params:
-          from: "{{column_net}}"     # 列ネット → スイッチ pin1
-          to: "{{colrow}}"           # スイッチ pin2 → ダイオード (キー固有ネット)
+          from: "{{column_net}}"
+          to: "{{colrow}}"
+          side: B                    # ソケットは裏面
           hotswap: true
-          reversible: true
-          choc_v2_support: true      # 中央穴 5.0mm (Choc v2)
-          choc_v1_support: true      # v1 用 1.9mm 位置決め穴も残す (v1 も挿せる)
-          include_keycap: false
+          reversible: false
+          choc_v2_support: true
+          choc_v1_support: true
 
-      # ---- ダイオード 1N4148W (SOD-123, 裏面 SMD, リバーシブル)
-      #      col2row: 列 → スイッチ → ダイオード(アノード=from) → 行(カソード=to)
       diode:
         what: ceoloide/diode_tht_sod123
         where: /^(matrix|thumb)_/
         adjust:
-          shift: [0, -7.2]           # ソケット/Choc v2 スタビ用パッドと干渉しないキー下側へ
+          shift: [0, -7.2]
         params:
           from: "{{colrow}}"
           to: "{{row_net}}"
-          reversible: true
+          side: B
+          reversible: false
           include_tht: false
-          include_traces_vias: true
 
-      # ---- MCU: nice!nano v2 (リバーシブル・ジャンパー式、チップ面を基板側に向けて実装)
-      #      列: P21 P20 P19 P18 P15 P14 / 行: P10(top) P16(home) P8(bottom) P9(thumb)
+      # XIAO nRF52840 Plus (表面 SMD)。VBAT/GND はスルーホールで裏から半田付け
       mcu:
-        what: ceoloide/mcu_nice_nano
+        what: local/mcu_xiao_nrf52840_plus
         where: mcu
         params:
-          reversible: true
-          reverse_mount: true
+          side: F
+          VBAT: VBAT
 
-      # ---- バッテリーコネクタ JST PH 2pin (裏面、開口部を MCU 直下のバッテリーへ向ける)
+      # バッテリーコネクタ (表面・開口部を下=バッテリー側に向ける)
       battery_jst:
         what: ceoloide/battery_connector_jst_ph_2
         where: mcu
         adjust:
-          shift: [0, -28]
-          rotate: 180
+          shift: [0, -14]
         params:
-          side: B
-          reversible: true
+          side: F
           BAT_P: BAT_P
           BAT_N: GND
 
-      # ---- 電源スイッチ (横押しスライド, Alps SSSS811101 等) 基板右端
+      # 電源スイッチ (ベイ右端・ツマミが基板端から出る)
       power_switch:
         what: ceoloide/power_switch_smd_side
-        where: mcu
+        where: batt
         adjust:
-          shift: [10, -27]
+          shift: [9.9, 6]
         params:
-          reversible: true
-          from: BAT_P              # バッテリー+
-          to: RAW                  # nice!nano B+/RAW
+          side: F
+          from: BAT_P
+          to: VBAT
 
-      # ---- リセットスイッチ (横押し, Panasonic EVQ-PUC02K) 基板右端
-      reset_switch:
-        what: ceoloide/reset_switch_smd_side
-        where: mcu
+      # M2 ネジ用 NPTH (キー4個の交点)
+      hole_a:
+        what: ceoloide/mounting_hole_npth
+        where: matrix_pinky_top
         adjust:
-          shift: [9.6, -36]
-          rotate: -90
+          shift: [-0.5kx, -0.5ky]
+      hole_b:
+        what: ceoloide/mounting_hole_npth
+        where: matrix_pinky_bottom
+        adjust:
+          shift: [-0.5kx, 0.5ky]
+      hole_c:
+        what: ceoloide/mounting_hole_npth
+        where: matrix_middle_bottom
+        adjust:
+          shift: [0, -0.72ky]
+      hole_d:
+        what: ceoloide/mounting_hole_npth
+        where: matrix_inner_bottom
+        adjust:
+          shift: [0, -0.72ky]
+
+  # ============================================================== 右手
+  first_right:
+    template: kicad8
+    outlines:
+      edge:
+        outline: board_right
+      battery:
+        outline: battery_right
+        layer: Dwgs.User
+    footprints:
+      choc:
+        what: ceoloide/switch_choc_v1_v2
+        where: /^mirror_(matrix|thumb)_/
         params:
-          reversible: true
-          from: GND
-          to: RST
+          from: "{{column_net}}"
+          to: "{{colrow}}"
+          side: B
+          hotswap: true
+          reversible: false
+          choc_v2_support: true
+          choc_v1_support: true
+
+      diode:
+        what: ceoloide/diode_tht_sod123
+        where: /^mirror_(matrix|thumb)_/
+        adjust:
+          shift: [0, -7.2]
+        params:
+          from: "{{colrow}}"
+          to: "{{row_net}}"
+          side: B
+          reversible: false
+          include_tht: false
+
+      mcu:
+        what: local/mcu_xiao_nrf52840_plus
+        where: mirror_mcu
+        params:
+          side: F
+          VBAT: VBAT
+
+      battery_jst:
+        what: ceoloide/battery_connector_jst_ph_2
+        where: mirror_mcu
+        adjust:
+          shift: [0, -14]
+        params:
+          side: F
+          BAT_P: BAT_P
+          BAT_N: GND
+
+      power_switch:
+        what: ceoloide/power_switch_smd_side
+        where: mirror_batt
+        adjust:
+          shift: [9.9, 6]
+          rotate: 180
+        params:
+          side: F
+          from: BAT_P
+          to: VBAT
+
+      hole_a:
+        what: ceoloide/mounting_hole_npth
+        where: mirror_matrix_pinky_top
+        adjust:
+          shift: [-0.5kx, -0.5ky]
+      hole_b:
+        what: ceoloide/mounting_hole_npth
+        where: mirror_matrix_pinky_bottom
+        adjust:
+          shift: [-0.5kx, 0.5ky]
+      hole_c:
+        what: ceoloide/mounting_hole_npth
+        where: mirror_matrix_middle_bottom
+        adjust:
+          shift: [0, -0.72ky]
+      hole_d:
+        what: ceoloide/mounting_hole_npth
+        where: mirror_matrix_inner_bottom
+        adjust:
+          shift: [0, -0.72ky]
