@@ -4,7 +4,7 @@
 #  - 片側: メイン 3行 x 6列 (outer/pinky/ring/middle/index/inner) + 親指 4キー
 #  - Gallium v2 風 Columnar Staggered (薬指・中指を上げ、人差し指・小指を下げる)
 #  - Kailh Choc v2 (PG1353) + Choc ホットスワップソケット (裏面)
-#  - MCU: Seeed XIAO nRF52840 Plus (表面・SMD直付け) / ダイオード: 1N4148W SOD-123
+#  - MCU: XIAO nRF52840 Plus (表面・DIP式: 貫通穴に流し込みハンダ) / ダイオード: SMD/THT両対応
 #  - 502030 LiPo は MCU 下の「ベイ」領域の裏面に配置 (ガイド矩形を Dwgs.User に出力)
 #  - 基板は左右で別設計 (first_left / first_right)。XIAO は USB とリセットボタンが
 #    上面にあるためリバーシブル1枚基板にできない。
@@ -22,7 +22,7 @@
 meta:
   engine: 4.1.0
   name: first
-  version: 0.2.0
+  version: 0.3.0
 
 # ---------------------------------------------------------------- 単位・変数
 units:
@@ -274,7 +274,7 @@ pcbs:
           to: "{{row_net}}"
           side: B
           reversible: false
-          include_tht: false
+          include_tht: true        # v1.5: 足付きガラス管 1N4148 を挿してハンダできる穴を追加
 
       # XIAO nRF52840 Plus (表面 SMD)。VBAT/GND はスルーホールで裏から半田付け
       mcu:
@@ -360,7 +360,7 @@ pcbs:
           to: "{{row_net}}"
           side: B
           reversible: false
-          include_tht: false
+          include_tht: true        # v1.5: 足付きガラス管 1N4148 を挿してハンダできる穴を追加
 
       mcu:
         what: local/mcu_xiao_nrf52840_plus
