@@ -1,6 +1,6 @@
 # ZMK ビルド対象 (GitHub Actions が読む)
 include:
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: first_left
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: first_right
